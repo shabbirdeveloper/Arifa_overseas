@@ -1,0 +1,33 @@
+{
+  "name": "arifa-overseas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Arifa Overseas Sdn Bhd — construction, manpower supply and maintenance (Johor Bahru, Malaysia)",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^16.3.5",
+    "nodemailer": "^10.0.9",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.4",
+    "@types/nodemailer": "^8.0.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.5",
+    "typescript": "^5.9.3"
+  }
+}
