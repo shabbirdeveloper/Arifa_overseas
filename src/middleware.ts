@@ -50,10 +50,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && isLoginRoute) {
-    return NextResponse.redirect(new URL('/admin', request.url));
-  }
-
+  // Deliberately NOT redirecting a signed-in user away from /admin/login.
+  //
+  // Middleware cannot cheaply tell whether that user is an *admin*, so sending
+  // them to /admin risks being sent straight back here — an infinite loop for
+  // anyone signed in but not yet listed in admin_users. The login page detects
+  // an existing session itself and offers a link instead of a redirect.
   return response;
 }
 

@@ -1,5 +1,5 @@
 import 'server-only';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { createSessionClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/types';
@@ -9,21 +9,28 @@ export interface AdminSession {
   user: User;
 }
 
+export type AdminAccess =
+  | { status: 'ok'; supabase: SupabaseClient<Database>; user: User }
+  | { status: 'not-admin'; user: User }
+  | { status: 'check-failed'; user: User; message: string };
+
 /**
  * Server-side gate for everything under /admin.
  *
- * Two distinct checks, because they fail differently:
- *   - signed in at all  → otherwise bounce to the login page;
- *   - listed in admin_users → otherwise a valid Supabase user who is not an
- *     admin would see the UI (they still could not write anything, because RLS
- *     blocks that, but showing them the screens would be misleading).
+ * Only ONE outcome redirects: no session at all, which sends you to the login
+ * page. Every other failure returns a status the layout renders in place.
  *
- * The middleware performs the first check too. This one is the real boundary:
- * middleware is a convenience, not a guarantee.
+ * That asymmetry is deliberate. An earlier version redirected a signed-in
+ * non-admin back to /admin/login, while the middleware redirected a signed-in
+ * user from /admin/login to /admin — two pages each bouncing to the other, so
+ * anyone signed in but not yet in admin_users hit ERR_TOO_MANY_REDIRECTS with
+ * no way out. A dead end that explains itself is always better than a redirect
+ * that might come back.
  */
-export async function requireAdmin(): Promise<AdminSession> {
+export async function checkAdminAccess(): Promise<AdminAccess> {
   const supabase = await createSessionClient();
 
+  // No Supabase configured at all — nothing to sign in to.
   if (!supabase) redirect('/admin/login');
 
   const {
@@ -36,12 +43,29 @@ export async function requireAdmin(): Promise<AdminSession> {
 
   if (error) {
     console.error('[admin] is_admin check failed:', error.message);
-    redirect('/admin/login?error=check-failed');
+    return { status: 'check-failed', user, message: error.message };
   }
 
-  if (!isAdmin) redirect('/admin/login?error=not-admin');
+  if (!isAdmin) return { status: 'not-admin', user };
 
-  return { supabase, user };
+  return { status: 'ok', supabase, user };
+}
+
+/**
+ * For the CRUD pages, which run inside the protected layout and therefore
+ * already know access was granted. Kept separate so each page still proves it
+ * for itself rather than trusting the layout.
+ */
+export async function requireAdmin(): Promise<AdminSession> {
+  const access = await checkAdminAccess();
+
+  // notFound(), not a redirect. The layout above already renders a proper
+  // explanation for a signed-in non-admin; this is only the belt-and-braces
+  // check for the page itself, and it has to terminate rather than send the
+  // browser somewhere that might send it back.
+  if (access.status !== 'ok') notFound();
+
+  return { supabase: access.supabase, user: access.user };
 }
 
 /**
