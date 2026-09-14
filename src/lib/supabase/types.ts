@@ -25,6 +25,8 @@ export type TeamMemberRow = {
   image_height: number | null;
   sort_order: number;
   is_published: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export type FeaturedProjectRow = {
@@ -39,6 +41,8 @@ export type FeaturedProjectRow = {
   is_tall: boolean;
   sort_order: number;
   is_published: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export type HistoryGroupRow = {
@@ -47,6 +51,8 @@ export type HistoryGroupRow = {
   title: string;
   style: HistoryGroupStyle;
   sort_order: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export type HistoryItemRow = {
@@ -64,6 +70,8 @@ export type HistoryItemRow = {
   mega_badge: string;
   sort_order: number;
   is_published: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export type JobRow = {
@@ -81,6 +89,8 @@ export type JobRow = {
   valid_through: string | null;
   sort_order: number;
   is_published: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export type AdminUserRow = {

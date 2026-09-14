@@ -1,17 +1,9 @@
-import Link from 'next/link';
 import { checkAdminAccess } from '@/lib/admin/guard';
 import { NoAccess } from './NoAccess';
-import { SignOutButton } from './SignOutButton';
+import { Sidebar, type SectionCounts } from './_components/Sidebar';
+import { Topbar } from './_components/Topbar';
 
 export const dynamic = 'force-dynamic';
-
-const LINKS = [
-  { href: '/admin', label: 'Dashboard' },
-  { href: '/admin/team', label: 'Team' },
-  { href: '/admin/projects', label: 'Featured projects' },
-  { href: '/admin/history', label: 'Project history' },
-  { href: '/admin/jobs', label: 'Jobs' },
-];
 
 export default async function ProtectedAdminLayout({
   children,
@@ -19,42 +11,42 @@ export default async function ProtectedAdminLayout({
   // The real gate. Middleware also checks, but middleware is not a boundary.
   const access = await checkAdminAccess();
 
-  // Signed in, but not allowed: explain it here rather than redirecting.
+  // Signed in, but not allowed: explain it here rather than redirecting —
+  // a redirect back to the login page is how the loop used to happen.
   if (access.status === 'not-admin') {
     return <NoAccess email={access.user.email} />;
   }
-
   if (access.status === 'check-failed') {
     return <NoAccess email={access.user.email} error={access.message} />;
   }
 
+  const { supabase, user } = access;
+
+  // Counts live in the sidebar, so they are fetched once for the whole area.
+  const [team, projects, history, jobs] = await Promise.all([
+    supabase.from('team_members').select('*', { count: 'exact', head: true }),
+    supabase.from('featured_projects').select('*', { count: 'exact', head: true }),
+    supabase
+      .from('project_history_items')
+      .select('*', { count: 'exact', head: true }),
+    supabase.from('jobs').select('*', { count: 'exact', head: true }),
+  ]);
+
+  const counts: SectionCounts = {
+    team: team.count ?? 0,
+    projects: projects.count ?? 0,
+    history: history.count ?? 0,
+    jobs: jobs.count ?? 0,
+  };
+
   return (
-    <>
-      <header className="adm-bar">
-        <Link href="/admin" className="adm-brand">
-          ARIFA <em>ADMIN</em>
-        </Link>
+    <div className="adm-shell">
+      <Sidebar counts={counts} email={user.email} />
 
-        <nav aria-label="Admin sections">
-          <ul className="adm-nav">
-            {LINKS.map((link) => (
-              <li key={link.href}>
-                <Link href={link.href}>{link.label}</Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="adm-bar-right">
-          <Link href="/" target="_blank" rel="noopener noreferrer">
-            View site ↗
-          </Link>
-          <span>{access.user.email}</span>
-          <SignOutButton />
-        </div>
-      </header>
-
-      <main className="adm-main">{children}</main>
-    </>
+      <div className="adm-body">
+        <Topbar />
+        <main className="adm-main">{children}</main>
+      </div>
+    </div>
   );
 }

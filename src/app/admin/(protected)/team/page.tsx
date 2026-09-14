@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/admin/guard';
 import type { TeamMemberRow } from '@/lib/supabase/types';
+import { SortableList } from '../_components/SortableList';
 import { createTeamMember, updateTeamMember } from './actions';
 import { TeamForm } from './TeamForm';
 
@@ -24,52 +25,55 @@ export default async function AdminTeamPage() {
     <>
       <div className="adm-head">
         <h1>Team</h1>
-        <span className="adm-meta">{members.length} members</span>
+        <p className="adm-sub">
+          The leadership cards on the About page, in the order shown here. Drag
+          a row — or use the arrows — to reorder. Members without a photo fall
+          back to the outline avatar.
+        </p>
       </div>
-      <p className="adm-sub">
-        The leadership cards on the About page. Members without a photo fall back
-        to the outline avatar, exactly as they do today.
-      </p>
 
       {error ? (
         <div className="adm-note adm-note-error">
-          Could not load the team: {error.message}. If you have not run
-          <code> supabase/schema.sql </code> yet, do that first.
+          <div>
+            Could not load the team: {error.message}. If you have not run{' '}
+            <code>supabase/schema.sql</code> yet, do that first.
+          </div>
         </div>
       ) : null}
 
-      <section className="adm-panel adm-new">
-        <h2>Add a team member</h2>
+      <details className="adm-panel adm-new">
+        <summary>Add a team member</summary>
         <TeamForm action={createTeamMember} nextSortOrder={nextSortOrder} />
-      </section>
+      </details>
 
-      <section>
-        {members.map((member) => (
-          <details className="adm-row" key={member.id}>
-            <summary>
-              <span className="adm-row-title">{member.name}</span>
-              <span className="adm-row-meta">
-                <span>{member.role}</span>
-                <span
-                  className={`adm-pill ${member.is_published ? 'adm-pill-on' : 'adm-pill-off'}`}
-                >
-                  {member.is_published ? 'Live' : 'Hidden'}
-                </span>
-              </span>
-            </summary>
-            <div className="adm-row-body">
-              <TeamForm action={updateTeamMember} member={member} />
+      <SortableList
+        table="team_members"
+        items={members.map((member) => ({
+          id: member.id,
+          title: member.name,
+          subtitle: member.role,
+          thumbnail: member.image_url,
+          badges: (
+            <span
+              className={`adm-pill ${member.is_published ? 'adm-pill-on' : 'adm-pill-off'}`}
+            >
+              {member.is_published ? 'Live' : 'Hidden'}
+            </span>
+          ),
+          body: <TeamForm action={updateTeamMember} member={member} />,
+        }))}
+        empty={
+          error ? null : (
+            <div className="adm-empty">
+              <h3>No team members yet</h3>
+              <p>
+                Run <code>supabase/seed.sql</code> to import the four from the
+                current site, or add someone above.
+              </p>
             </div>
-          </details>
-        ))}
-
-        {members.length === 0 && !error ? (
-          <div className="adm-note adm-note-info">
-            No team members yet. Run <code>supabase/seed.sql</code> to import the
-            four from the current site, or add them above.
-          </div>
-        ) : null}
-      </section>
+          )
+        }
+      />
     </>
   );
 }

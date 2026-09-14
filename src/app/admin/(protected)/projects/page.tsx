@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/admin/guard';
 import type { FeaturedProjectRow } from '@/lib/supabase/types';
+import { SortableList } from '../_components/SortableList';
 import { createFeaturedProject, updateFeaturedProject } from './actions';
 import { ProjectForm } from './ProjectForm';
 
@@ -24,52 +25,58 @@ export default async function AdminProjectsPage() {
     <>
       <div className="adm-head">
         <h1>Featured projects</h1>
-        <span className="adm-meta">{projects.length} tiles</span>
+        <p className="adm-sub">
+          The image tiles at the top of the Projects page, in this order. The
+          category also drives the filter buttons above them.
+        </p>
       </div>
-      <p className="adm-sub">
-        The image tiles at the top of the Projects page. The category also drives
-        the filter buttons above them.
-      </p>
 
       {error ? (
         <div className="adm-note adm-note-error">
-          Could not load projects: {error.message}
+          <div>Could not load projects: {error.message}</div>
         </div>
       ) : null}
 
-      <section className="adm-panel adm-new">
-        <h2>Add a project</h2>
-        <ProjectForm action={createFeaturedProject} nextSortOrder={nextSortOrder} />
-      </section>
+      <details className="adm-panel adm-new">
+        <summary>Add a project</summary>
+        <ProjectForm
+          action={createFeaturedProject}
+          nextSortOrder={nextSortOrder}
+        />
+      </details>
 
-      <section>
-        {projects.map((project) => (
-          <details className="adm-row" key={project.id}>
-            <summary>
-              <span className="adm-row-title">{project.title}</span>
-              <span className="adm-row-meta">
-                <span className="adm-pill">{project.category}</span>
-                {project.is_tall ? <span className="adm-pill">Tall</span> : null}
-                <span
-                  className={`adm-pill ${project.is_published ? 'adm-pill-on' : 'adm-pill-off'}`}
-                >
-                  {project.is_published ? 'Live' : 'Hidden'}
-                </span>
+      <SortableList
+        table="featured_projects"
+        items={projects.map((project) => ({
+          id: project.id,
+          title: project.title,
+          subtitle: project.description || project.category,
+          thumbnail: project.image_url,
+          badges: (
+            <>
+              <span className="adm-pill">{project.category}</span>
+              {project.is_tall ? <span className="adm-pill">Tall</span> : null}
+              <span
+                className={`adm-pill ${project.is_published ? 'adm-pill-on' : 'adm-pill-off'}`}
+              >
+                {project.is_published ? 'Live' : 'Hidden'}
               </span>
-            </summary>
-            <div className="adm-row-body">
-              <ProjectForm action={updateFeaturedProject} project={project} />
+            </>
+          ),
+          body: <ProjectForm action={updateFeaturedProject} project={project} />,
+        }))}
+        empty={
+          error ? null : (
+            <div className="adm-empty">
+              <h3>No projects yet</h3>
+              <p>
+                Run <code>supabase/seed.sql</code> to import the nine from the
+                current site, or add one above.
+              </p>
             </div>
-          </details>
-        ))}
-
-        {projects.length === 0 && !error ? (
-          <div className="adm-note adm-note-info">
-            No projects yet. Run <code>supabase/seed.sql</code> to import the nine
-            from the current site, or add one above.
-          </div>
-        ) : null}
-      </section>
+          )
+        }
+      />
     </>
   );
 }

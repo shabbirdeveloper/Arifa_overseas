@@ -79,20 +79,11 @@ export function GroupForm({
             </select>
           </Field>
 
-          <Field
-            label="Position"
+          <input
+            type="hidden"
             name="sort_order"
-            errors={errors}
-            hint="Lower numbers appear first."
-          >
-            <input
-              id="f-sort_order"
-              name="sort_order"
-              type="number"
-              min={0}
-              defaultValue={group?.sort_order ?? nextSortOrder}
-            />
-          </Field>
+            value={group?.sort_order ?? nextSortOrder}
+          />
         </div>
       )}
     </FormShell>
@@ -227,22 +218,13 @@ export function ItemForm({
             />
           </Field>
 
-          <div className="adm-grid" style={{ marginTop: 14 }}>
-            <Field
-              label="Position"
-              name="sort_order"
-              errors={errors}
-              hint="Lower numbers appear first."
-            >
-              <input
-                id="f-sort_order"
-                name="sort_order"
-                type="number"
-                min={0}
-                defaultValue={item?.sort_order ?? nextSortOrder}
-              />
-            </Field>
+          <input
+            type="hidden"
+            name="sort_order"
+            value={item?.sort_order ?? nextSortOrder}
+          />
 
+          <div className="adm-grid">
             <Field
               label="Flagship badge"
               name="mega_badge"
@@ -259,7 +241,7 @@ export function ItemForm({
             </Field>
           </div>
 
-          <div className="adm-grid" style={{ marginTop: 10 }}>
+          <div className="adm-grid">
             <label className="adm-check">
               <input
                 type="checkbox"

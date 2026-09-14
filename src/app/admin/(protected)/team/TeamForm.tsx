@@ -87,33 +87,21 @@ export function TeamForm({ action, member, nextSortOrder = 0 }: TeamFormProps) {
             error={errors.image_url}
           />
 
-          <div className="adm-grid-2" style={{ marginTop: 14 }}>
-            <Field
-              label="Position"
-              name="sort_order"
-              errors={errors}
-              hint="Lower numbers appear first."
-            >
-              <input
-                id="f-sort_order"
-                name="sort_order"
-                type="number"
-                min={0}
-                defaultValue={member?.sort_order ?? nextSortOrder}
-              />
-            </Field>
+          {/* Order is set by dragging in the list, not typed here. */}
+          <input
+            type="hidden"
+            name="sort_order"
+            value={member?.sort_order ?? nextSortOrder}
+          />
 
-            <div className="adm-field" style={{ justifyContent: 'flex-end' }}>
-              <label className="adm-check">
-                <input
-                  type="checkbox"
-                  name="is_published"
-                  defaultChecked={member?.is_published ?? true}
-                />
-                Show on the website
-              </label>
-            </div>
-          </div>
+          <label className="adm-check">
+            <input
+              type="checkbox"
+              name="is_published"
+              defaultChecked={member?.is_published ?? true}
+            />
+            Show on the website
+          </label>
         </>
       )}
     </FormShell>

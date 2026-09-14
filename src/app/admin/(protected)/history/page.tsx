@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/admin/guard';
 import type { HistoryGroupRow, HistoryItemRow } from '@/lib/supabase/types';
+import { SortableList } from '../_components/SortableList';
 import {
   createGroup,
   createHistoryItem,
@@ -38,42 +39,82 @@ export default async function AdminHistoryPage() {
   }
 
   const nextGroupOrder =
-    groups.length > 0 ? Math.max(...groups.map((group) => group.sort_order)) + 1 : 0;
+    groups.length > 0
+      ? Math.max(...groups.map((group) => group.sort_order)) + 1
+      : 0;
+
+  const hidden = items.filter((item) => !item.is_published).length;
 
   return (
     <>
       <div className="adm-head">
         <h1>Project history</h1>
-        <span className="adm-meta">
-          {groups.length} groups · {items.length} records
-        </span>
+        <p className="adm-sub">
+          The track record further down the Projects page. Records sit inside
+          year groups; both the groups and the records inside them can be
+          reordered by dragging, or with the arrow buttons.
+        </p>
       </div>
-      <p className="adm-sub">
-        The track-record section lower down the Projects page. Records are
-        organised into year groups; deleting a group deletes its records too.
-      </p>
 
       {error ? (
         <div className="adm-note adm-note-error">
-          Could not load the history: {error.message}
+          <div>
+            Could not load the history: {error.message}. If you have not run{' '}
+            <code>supabase/schema.sql</code> yet, do that first.
+          </div>
         </div>
       ) : null}
 
-      <section className="adm-panel adm-new">
-        <h2>Add a year group</h2>
-        <GroupForm action={createGroup} nextSortOrder={nextGroupOrder} />
-      </section>
-
-      {groups.length > 0 ? (
-        <section className="adm-panel adm-new">
-          <h2>Add a record</h2>
-          <ItemForm
-            action={createHistoryItem}
-            groups={groups}
-            defaultGroupId={groups[0]?.id}
-          />
-        </section>
+      {hidden > 0 ? (
+        <div className="adm-note adm-note-info">
+          <div>
+            {hidden === 1
+              ? '1 record is hidden'
+              : `${hidden} records are hidden`}{' '}
+            and does not appear on the site.
+          </div>
+        </div>
       ) : null}
+
+      <section className="adm-panel">
+        <div className="adm-panel-head">
+          <h2>Year groups</h2>
+          <span className="adm-meta">
+            {groups.length} {groups.length === 1 ? 'group' : 'groups'} ·{' '}
+            {items.length} {items.length === 1 ? 'record' : 'records'}
+          </span>
+        </div>
+
+        <details className="adm-panel adm-new">
+          <summary>Add a year group</summary>
+          <GroupForm action={createGroup} nextSortOrder={nextGroupOrder} />
+        </details>
+
+        <SortableList
+          table="project_history_groups"
+          items={groups.map((group) => {
+            const count = (itemsByGroup.get(group.id) ?? []).length;
+            return {
+              id: group.id,
+              title: `${group.badge} — ${group.title}`,
+              subtitle: `${count} ${count === 1 ? 'record' : 'records'}`,
+              badges: <span className="adm-pill">{group.style}</span>,
+              body: <GroupForm action={updateGroup} group={group} />,
+            };
+          })}
+          empty={
+            error ? null : (
+              <div className="adm-empty">
+                <h3>No year groups yet</h3>
+                <p>
+                  Run <code>supabase/seed.sql</code> to import the 26 records
+                  from the current site, or start a group above.
+                </p>
+              </div>
+            )
+          }
+        />
+      </section>
 
       {groups.map((group) => {
         const groupItems = itemsByGroup.get(group.id) ?? [];
@@ -86,65 +127,61 @@ export default async function AdminHistoryPage() {
           <section className="adm-panel" key={group.id}>
             <div className="adm-panel-head">
               <h2>
-                {group.badge} — {group.title}
+                <span className="adm-pill">{group.badge}</span> {group.title}
               </h2>
-              <span className="adm-meta">{groupItems.length} records</span>
+              <span className="adm-meta">
+                {groupItems.length}{' '}
+                {groupItems.length === 1 ? 'record' : 'records'}
+              </span>
             </div>
 
-            <details className="adm-row">
-              <summary>
-                <span className="adm-row-title">Group settings</span>
-                <span className="adm-row-meta">
-                  <span className="adm-pill">{group.style}</span>
-                </span>
-              </summary>
-              <div className="adm-row-body">
-                <GroupForm action={updateGroup} group={group} />
-              </div>
+            <details className="adm-panel adm-new">
+              <summary>Add a record to {group.badge}</summary>
+              <ItemForm
+                action={createHistoryItem}
+                groups={groups}
+                defaultGroupId={group.id}
+                nextSortOrder={nextItemOrder}
+              />
             </details>
 
-            {groupItems.map((item) => (
-              <details className="adm-row" key={item.id}>
-                <summary>
-                  <span className="adm-row-title">
-                    {item.num ? `${item.num}. ` : ''}
-                    {item.client}
-                  </span>
-                  <span className="adm-row-meta">
-                    {item.value ? <span>{item.value}</span> : null}
-                    {item.is_mega ? <span className="adm-pill">Flagship</span> : null}
-                    {item.is_ongoing ? <span className="adm-pill">Ongoing</span> : null}
+            <SortableList
+              table="project_history_items"
+              items={groupItems.map((item) => ({
+                id: item.id,
+                title: `${item.num ? `${item.num}. ` : ''}${item.client}`,
+                subtitle: item.title,
+                badges: (
+                  <>
+                    {item.value ? (
+                      <span className="adm-meta">{item.value}</span>
+                    ) : null}
+                    {item.is_mega ? (
+                      <span className="adm-pill">Flagship</span>
+                    ) : null}
+                    {item.is_ongoing ? (
+                      <span className="adm-pill">Ongoing</span>
+                    ) : null}
                     <span
                       className={`adm-pill ${item.is_published ? 'adm-pill-on' : 'adm-pill-off'}`}
                     >
                       {item.is_published ? 'Live' : 'Hidden'}
                     </span>
-                  </span>
-                </summary>
-                <div className="adm-row-body">
+                  </>
+                ),
+                body: (
                   <ItemForm
                     action={updateHistoryItem}
                     groups={groups}
                     item={item}
-                    nextSortOrder={nextItemOrder}
                   />
-                </div>
-              </details>
-            ))}
-
-            {groupItems.length === 0 ? (
-              <p className="adm-meta">No records in this group yet.</p>
-            ) : null}
+                ),
+              }))}
+              empty={<p className="adm-meta">No records in this group yet.</p>}
+            />
           </section>
         );
       })}
-
-      {groups.length === 0 && !error ? (
-        <div className="adm-note adm-note-info">
-          No year groups yet. Run <code>supabase/seed.sql</code> to import the 26
-          records from the current site, or start a group above.
-        </div>
-      ) : null}
     </>
   );
 }

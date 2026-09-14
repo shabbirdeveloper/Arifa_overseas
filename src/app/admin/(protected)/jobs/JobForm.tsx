@@ -193,21 +193,6 @@ export function JobForm({ action, job, nextSortOrder = 0 }: JobFormProps) {
               />
             </Field>
 
-            <Field
-              label="Position"
-              name="sort_order"
-              errors={errors}
-              hint="Lower numbers appear first."
-            >
-              <input
-                id="f-sort_order"
-                name="sort_order"
-                type="number"
-                min={0}
-                defaultValue={job?.sort_order ?? nextSortOrder}
-              />
-            </Field>
-
             <div className="adm-field" style={{ justifyContent: 'flex-end' }}>
               <label className="adm-check">
                 <input
@@ -219,6 +204,12 @@ export function JobForm({ action, job, nextSortOrder = 0 }: JobFormProps) {
               </label>
             </div>
           </div>
+
+          <input
+            type="hidden"
+            name="sort_order"
+            value={job?.sort_order ?? nextSortOrder}
+          />
         </>
       )}
     </FormShell>

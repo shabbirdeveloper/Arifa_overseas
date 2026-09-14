@@ -101,43 +101,30 @@ export function ProjectForm({
             />
           </Field>
 
-          <div className="adm-grid" style={{ marginTop: 14 }}>
-            <Field
-              label="Position"
-              name="sort_order"
-              errors={errors}
-              hint="Lower numbers appear first."
-            >
+          <input
+            type="hidden"
+            name="sort_order"
+            value={project?.sort_order ?? nextSortOrder}
+          />
+
+          <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>
+            <label className="adm-check">
               <input
-                id="f-sort_order"
-                name="sort_order"
-                type="number"
-                min={0}
-                defaultValue={project?.sort_order ?? nextSortOrder}
+                type="checkbox"
+                name="is_tall"
+                defaultChecked={project?.is_tall ?? false}
               />
-            </Field>
+              Double-height tile
+            </label>
 
-            <div className="adm-field" style={{ justifyContent: 'flex-end' }}>
-              <label className="adm-check">
-                <input
-                  type="checkbox"
-                  name="is_tall"
-                  defaultChecked={project?.is_tall ?? false}
-                />
-                Double-height tile
-              </label>
-            </div>
-
-            <div className="adm-field" style={{ justifyContent: 'flex-end' }}>
-              <label className="adm-check">
-                <input
-                  type="checkbox"
-                  name="is_published"
-                  defaultChecked={project?.is_published ?? true}
-                />
-                Show on the website
-              </label>
-            </div>
+            <label className="adm-check">
+              <input
+                type="checkbox"
+                name="is_published"
+                defaultChecked={project?.is_published ?? true}
+              />
+              Show on the website
+            </label>
           </div>
         </>
       )}
