@@ -1,11 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
-import { Footer } from '@/components/layout/Footer';
-import { Nav } from '@/components/layout/Nav';
-import { ScrollReveal } from '@/components/layout/ScrollReveal';
-import { Splash } from '@/components/layout/Splash';
-import { WhatsAppFab } from '@/components/layout/WhatsAppFab';
-import { OrganizationJsonLd, WebSiteJsonLd } from '@/components/seo/JsonLd';
 import { site } from '@/content/site';
 import { siteUrl } from '@/lib/seo';
 import './globals.css';
@@ -102,7 +96,6 @@ export const viewport: Viewport = {
 const bootScript = `(function(){try{if(localStorage.getItem('theme')==='light'){document.documentElement.setAttribute('data-theme','light')}}catch(e){}
 try{if(sessionStorage.getItem('splash-seen')==='1'||window.matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.setAttribute('data-splash','skip')}}catch(e){}})();`;
 
-/** Second half of the theme step — body does not exist yet in <head>. */
 const themeBodyScript = `(function(){try{if(document.documentElement.getAttribute('data-theme')==='light'){document.body.classList.add('light-theme')}}catch(e){}})();`;
 
 export default function RootLayout({
@@ -112,26 +105,11 @@ export default function RootLayout({
     <html lang="en-MY" className={inter.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: bootScript }} />
-        <OrganizationJsonLd />
-        <WebSiteJsonLd />
-        <noscript>
-          {/* Without JS the splash never hides and reveal elements never get
-              `.in` — in the legacy site that left a blank page. Undo both. */}
-          <style>{`#splash{display:none!important}
-.s3d,.s3d-l,.s3d-r,.s3d-p,.s3d-left,.s3d-right,.s3d-pop{opacity:1!important;transform:none!important}`}</style>
-        </noscript>
       </head>
       <body>
+        {/* Second half of the theme step — <body> does not exist yet in <head>. */}
         <script dangerouslySetInnerHTML={{ __html: themeBodyScript }} />
-        <a className="skip-link" href="#main">
-          Skip to content
-        </a>
-        <Splash />
-        <Nav />
-        <WhatsAppFab />
-        <main id="main">{children}</main>
-        <Footer />
-        <ScrollReveal />
+        {children}
       </body>
     </html>
   );

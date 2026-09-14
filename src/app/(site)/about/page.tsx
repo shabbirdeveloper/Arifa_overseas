@@ -1,9 +1,12 @@
 import Image from 'next/image';
 import { Icon } from '@/components/ui/Icon';
 import { PageHero } from '@/components/ui/PageHero';
-import { coreValues, team } from '@/content/company';
+import { coreValues } from '@/content/company';
 import { sectionImages } from '@/content/site';
+import { getTeam } from '@/lib/data/team';
 import { pageMeta } from '@/lib/seo';
+
+export const revalidate = 3600;
 
 export const metadata = pageMeta({
   title: 'About Us',
@@ -26,7 +29,9 @@ const statBoxStyle: React.CSSProperties = {
   borderRadius: 10,
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const team = await getTeam();
+
   return (
     <div id="page-about" className="page active">
       <PageHero
@@ -234,7 +239,7 @@ export default function AboutPage() {
           <div className="team-grid">
             {team.map((member, index) => (
               <div
-                key={member.name}
+                key={member.id}
                 className={`team-card ${index % 2 === 0 ? 's3d-left' : 's3d-right'}`}
               >
                 {member.image ? (

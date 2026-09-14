@@ -1,6 +1,6 @@
 import { site } from '@/content/site';
 import { certificates } from '@/content/certificates';
-import { jobs } from '@/content/jobs';
+import type { Job } from '@/lib/data/jobs';
 import { absoluteUrl } from '@/lib/seo';
 
 /** Serialises structured data, escaping `<` so the JSON can't break out. */
@@ -86,17 +86,10 @@ export function WebSiteJsonLd() {
 
 /**
  * JobPosting for every open role, so the careers page is eligible for the
- * Google Jobs experience.
- *
- * `datePosted` and `validThrough` are derived from the build date because the
- * source listings carry no dates — add real dates to src/content/jobs.ts if
- * you want them to be accurate.
+ * Google Jobs experience. Dates come from the database so a listing drops out
+ * of Google when it actually closes.
  */
-export function JobPostingsJsonLd() {
-  const datePosted = new Date();
-  const validThrough = new Date(datePosted);
-  validThrough.setMonth(validThrough.getMonth() + 3);
-
+export function JobPostingsJsonLd({ jobs }: { jobs: Job[] }) {
   return (
     <>
       {jobs.map((job) => (
@@ -107,9 +100,9 @@ export function JobPostingsJsonLd() {
             '@type': 'JobPosting',
             title: job.title,
             description: `${job.title} at ${site.legalName}. Requirements: ${job.requirements.join('; ')}.`,
-            datePosted: datePosted.toISOString().slice(0, 10),
-            validThrough: validThrough.toISOString().slice(0, 10),
-            employmentType: job.type.toUpperCase().includes('FULL')
+            datePosted: job.postedAt,
+            validThrough: job.validThrough,
+            employmentType: job.employmentType.toUpperCase().includes('FULL')
               ? 'FULL_TIME'
               : 'CONTRACTOR',
             hiringOrganization: {
@@ -123,7 +116,7 @@ export function JobPostingsJsonLd() {
               address: postalAddress,
             },
             directApply: true,
-            url: absoluteUrl(`/careers#${job.id}`),
+            url: absoluteUrl(`/careers#${job.slug}`),
           }}
         />
       ))}

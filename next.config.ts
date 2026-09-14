@@ -1,5 +1,19 @@
 import type { NextConfig } from 'next';
 
+/**
+ * Supabase Storage host for images uploaded through the admin. Derived from
+ * the project URL so there is one place to configure.
+ */
+const supabaseHost = (() => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!url) return null;
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return null;
+  }
+})();
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -13,6 +27,15 @@ const nextConfig: NextConfig = {
         hostname: 'images.unsplash.com',
         pathname: '/**',
       },
+      ...(supabaseHost
+        ? [
+            {
+              protocol: 'https' as const,
+              hostname: supabaseHost,
+              pathname: '/storage/v1/object/public/**',
+            },
+          ]
+        : []),
     ],
     formats: ['image/avif', 'image/webp'],
   },

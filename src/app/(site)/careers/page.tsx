@@ -4,7 +4,12 @@ import { Icon } from '@/components/ui/Icon';
 import { PageHero } from '@/components/ui/PageHero';
 import { careerBenefits } from '@/content/company';
 import { pageHeroImages } from '@/content/site';
+import { getJobs } from '@/lib/data/jobs';
 import { pageMeta } from '@/lib/seo';
+
+// Pre-rendered, refreshed hourly, and purged immediately when a job is saved
+// in the admin (see revalidatePublic in the job actions).
+export const revalidate = 3600;
 
 export const metadata = pageMeta({
   title: 'Careers',
@@ -30,10 +35,12 @@ const perkStyle: React.CSSProperties = {
   fontWeight: 500,
 };
 
-export default function CareersPage() {
+export default async function CareersPage() {
+  const jobs = await getJobs();
+
   return (
     <div id="page-careers" className="page active">
-      <JobPostingsJsonLd />
+      <JobPostingsJsonLd jobs={jobs} />
 
       <PageHero
         variant="compact"
@@ -100,7 +107,7 @@ export default function CareersPage() {
             </p>
           </div>
 
-          <JobsSection />
+          <JobsSection jobs={jobs} />
         </div>
       </section>
     </div>

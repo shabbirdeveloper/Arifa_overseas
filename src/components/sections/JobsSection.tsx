@@ -2,8 +2,16 @@
 
 import { useMemo, useState } from 'react';
 import { ApplyModal } from '@/components/forms/ApplyModal';
-import { Icon } from '@/components/ui/Icon';
-import { jobFilters, jobs } from '@/content/jobs';
+import { JOB_ICONS } from '@/content/job-icons';
+import type { Job } from '@/lib/data/jobs';
+
+const JOB_FILTERS = [
+  { value: 'all', label: 'All Jobs' },
+  { value: 'engineering', label: 'Engineering' },
+  { value: 'skilled', label: 'Skilled Trades' },
+  { value: 'general', label: 'General' },
+  { value: 'management', label: 'Management' },
+] as const;
 
 const PinIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13" aria-hidden="true">
@@ -24,25 +32,19 @@ const CoinIcon = () => (
   </svg>
 );
 
-/** Converts the legacy inline `background:...` string into a React style. */
-function parseIconBg(style: string): { background?: string } {
-  const match = /background\s*:\s*([^;]+)/i.exec(style);
-  return match?.[1] ? { background: match[1].trim() } : {};
-}
-
-export function JobsSection() {
+export function JobsSection({ jobs }: { jobs: Job[] }) {
   const [filter, setFilter] = useState<string>('all');
   const [applyFor, setApplyFor] = useState<string | null>(null);
 
   const visible = useMemo(
     () => (filter === 'all' ? jobs : jobs.filter((job) => job.category === filter)),
-    [filter],
+    [filter, jobs],
   );
 
   return (
     <>
       <div className="job-filter s3d" role="group" aria-label="Filter jobs by department">
-        {jobFilters.map((option) => (
+        {JOB_FILTERS.map((option) => (
           <button
             key={option.value}
             type="button"
@@ -59,12 +61,16 @@ export function JobsSection() {
         {visible.map((job, index) => (
           <div
             key={job.id}
-            id={job.id}
+            id={job.slug}
             className={`job-card s3d d${(index % 3) + 1}`}
           >
             <div className="job-header">
-              <div className="job-icon" style={parseIconBg(job.iconBg)}>
-                <Icon svg={job.icon} />
+              <div
+                className="job-icon"
+                style={{ background: 'rgba(56,189,248,0.12)' }}
+                aria-hidden="true"
+              >
+                {JOB_ICONS[job.iconKey]}
               </div>
               <div>
                 <div className="job-cat-tag">{job.categoryLabel}</div>
@@ -77,7 +83,7 @@ export function JobsSection() {
                 <PinIcon /> {job.location}
               </span>
               <span className="job-detail">
-                <BriefcaseIcon /> {job.type}
+                <BriefcaseIcon /> {job.employmentType}
               </span>
               <span className="job-detail">
                 <CoinIcon /> {job.salary}

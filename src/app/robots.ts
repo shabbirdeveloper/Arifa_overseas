@@ -7,7 +7,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: '/api/',
+        // The admin pages also send noindex headers; this keeps crawlers from
+        // requesting them at all.
+        disallow: ['/api/', '/admin'],
       },
     ],
     sitemap: absoluteUrl('/sitemap.xml'),
