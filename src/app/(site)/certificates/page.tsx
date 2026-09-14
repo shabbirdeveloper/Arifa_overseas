@@ -2,7 +2,12 @@ import Link from 'next/link';
 import { CertificateCards } from '@/components/sections/CertificateCards';
 import { PageHero } from '@/components/ui/PageHero';
 import { pageHeroImages } from '@/content/site';
+import { getCertificates } from '@/lib/data/certificates';
 import { pageMeta } from '@/lib/seo';
+
+// Pre-rendered, refreshed hourly, and refreshed immediately when an admin
+// saves a certificate (revalidatePath in the admin action).
+export const revalidate = 3600;
 
 export const metadata = pageMeta({
   title: 'Our Certificates',
@@ -11,7 +16,9 @@ export const metadata = pageMeta({
   path: '/certificates',
 });
 
-export default function CertificatesPage() {
+export default async function CertificatesPage() {
+  const certificates = await getCertificates();
+
   return (
     <div id="page-certificates" className="page active">
       <PageHero
@@ -42,7 +49,7 @@ export default function CertificatesPage() {
             </p>
           </div>
 
-          <CertificateCards />
+          <CertificateCards certificates={certificates} />
 
           <div className="cert-upload-note s3d">
             <div style={{ fontSize: '2rem', marginBottom: 12 }}>✅</div>

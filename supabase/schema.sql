@@ -131,6 +131,26 @@ create table if not exists public.jobs (
   updated_at      timestamptz not null default now()
 );
 
+-- ── certificates ────────────────────────────────────────────────────────────
+
+create table if not exists public.certificates (
+  id           uuid primary key default gen_random_uuid(),
+  name         text not null check (char_length(name) between 2 and 200),
+  badge        text not null default '',
+  description  text not null default '',
+  authority    text not null default '',
+  image_url    text not null default '',
+  image_width  integer,
+  image_height integer,
+  -- Key into the icon set in src/content/certificate-icons.tsx. The SVG itself
+  -- stays in code: letting an admin store raw SVG would be an XSS vector.
+  icon_key     text not null default 'registry',
+  sort_order   integer not null default 0,
+  is_published boolean not null default true,
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+
 -- ── updated_at triggers ─────────────────────────────────────────────────────
 
 do $$
@@ -139,7 +159,7 @@ declare
 begin
   foreach t in array array[
     'team_members', 'featured_projects', 'project_history_groups',
-    'project_history_items', 'jobs'
+    'project_history_items', 'jobs', 'certificates'
   ]
   loop
     execute format('drop trigger if exists set_updated_at on public.%I', t);
@@ -161,6 +181,7 @@ alter table public.featured_projects      enable row level security;
 alter table public.project_history_groups enable row level security;
 alter table public.project_history_items  enable row level security;
 alter table public.jobs                   enable row level security;
+alter table public.certificates           enable row level security;
 
 -- admin_users: an admin may see the list; nobody may modify it from the app.
 -- Add and remove admins in the Supabase dashboard.
@@ -174,7 +195,8 @@ declare
   t text;
 begin
   foreach t in array array[
-    'team_members', 'featured_projects', 'project_history_items', 'jobs'
+    'team_members', 'featured_projects', 'project_history_items', 'jobs',
+    'certificates'
   ]
   loop
     execute format('drop policy if exists "public reads published" on public.%I', t);

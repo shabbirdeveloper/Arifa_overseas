@@ -9,6 +9,7 @@ const TITLES: Record<string, string> = {
   '/admin/projects': 'Featured projects',
   '/admin/history': 'Project history',
   '/admin/jobs': 'Jobs',
+  '/admin/certificates': 'Certificates',
 };
 
 /** Where each section's content appears on the public site. */
@@ -17,6 +18,7 @@ const PREVIEW: Record<string, string> = {
   '/admin/projects': '/projects',
   '/admin/history': '/projects',
   '/admin/jobs': '/careers',
+  '/admin/certificates': '/certificates',
 };
 
 export function Topbar() {

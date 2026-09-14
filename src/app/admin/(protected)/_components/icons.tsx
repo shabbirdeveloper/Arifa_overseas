@@ -45,6 +45,16 @@ export const IconJobs = () => (
   </svg>
 );
 
+export const IconCertificate = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3.5" y="3.5" width="17" height="12" rx="2" />
+    <path d="M7.5 7.5h6" />
+    <path d="M7.5 11h4" />
+    <circle cx="16.5" cy="17.5" r="3" />
+    <path d="M14.6 20l-.6 3 2.5-1.4 2.5 1.4-.6-3" />
+  </svg>
+);
+
 export const IconExternal = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <path d="M14 4h6v6" />

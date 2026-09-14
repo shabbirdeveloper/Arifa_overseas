@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import {
+  IconCertificate,
   IconDashboard,
   IconExternal,
   IconHistory,
@@ -18,6 +19,7 @@ export interface SectionCounts {
   projects: number;
   history: number;
   jobs: number;
+  certificates: number;
 }
 
 const SECTIONS: Array<{
@@ -41,6 +43,12 @@ const SECTIONS: Array<{
     key: 'history',
   },
   { href: '/admin/jobs', label: 'Jobs', icon: <IconJobs />, key: 'jobs' },
+  {
+    href: '/admin/certificates',
+    label: 'Certificates',
+    icon: <IconCertificate />,
+    key: 'certificates',
+  },
 ];
 
 function initials(email: string | undefined): string {

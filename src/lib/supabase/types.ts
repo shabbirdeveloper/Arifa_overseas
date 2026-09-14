@@ -93,6 +93,22 @@ export type JobRow = {
   updated_at: string;
 }
 
+export type CertificateRow = {
+  id: string;
+  name: string;
+  badge: string;
+  description: string;
+  authority: string;
+  image_url: string;
+  image_width: number | null;
+  image_height: number | null;
+  icon_key: string;
+  sort_order: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export type AdminUserRow = {
   user_id: string;
   email: string | null;
@@ -120,6 +136,7 @@ export type Database = {
       project_history_groups: Table<HistoryGroupRow>;
       project_history_items: Table<HistoryItemRow>;
       jobs: Table<JobRow>;
+      certificates: Table<CertificateRow>;
       admin_users: Table<AdminUserRow>;
     };
     Views: Record<never, never>;

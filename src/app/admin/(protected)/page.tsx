@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireAdmin } from '@/lib/admin/guard';
 import {
+  IconCertificate,
   IconHistory,
   IconJobs,
   IconProjects,
@@ -50,7 +51,7 @@ function daysUntil(date: string): number {
 export default async function AdminDashboard() {
   const { supabase } = await requireAdmin();
 
-  const [teamResult, projectResult, historyResult, jobResult] =
+  const [teamResult, projectResult, historyResult, jobResult, certificateResult] =
     await Promise.all([
       supabase
         .from('team_members')
@@ -68,13 +69,18 @@ export default async function AdminDashboard() {
         .from('jobs')
         .select('id,title,is_published,valid_through,updated_at')
         .order('updated_at', { ascending: false }),
+      supabase
+        .from('certificates')
+        .select('id,name,is_published,updated_at')
+        .order('updated_at', { ascending: false }),
     ]);
 
   const firstError =
     teamResult.error ??
     projectResult.error ??
     historyResult.error ??
-    jobResult.error;
+    jobResult.error ??
+    certificateResult.error;
 
   const team = (teamResult.data ?? []) as (Timestamped & { name: string })[];
   const projects = (projectResult.data ?? []) as (Timestamped & {
@@ -86,6 +92,9 @@ export default async function AdminDashboard() {
   const jobs = (jobResult.data ?? []) as (Timestamped & {
     title: string;
     valid_through: string | null;
+  })[];
+  const certificates = (certificateResult.data ?? []) as (Timestamped & {
+    name: string;
   })[];
 
   const stats = [
@@ -121,6 +130,14 @@ export default async function AdminDashboard() {
       page: 'Careers page',
       rows: jobs as Timestamped[],
     },
+    {
+      key: 'certificates',
+      label: 'Certificates',
+      href: '/admin/certificates',
+      icon: <IconCertificate />,
+      page: 'Certificates page',
+      rows: certificates as Timestamped[],
+    },
   ];
 
   const activity: Activity[] = [
@@ -150,6 +167,13 @@ export default async function AdminDashboard() {
       label: row.title,
       section: 'Job',
       href: '/admin/jobs',
+      updatedAt: row.updated_at,
+    })),
+    ...certificates.map((row) => ({
+      id: `certificate-${row.id}`,
+      label: row.name,
+      section: 'Certificate',
+      href: '/admin/certificates',
       updatedAt: row.updated_at,
     })),
   ]
@@ -185,8 +209,13 @@ export default async function AdminDashboard() {
         <div className="adm-note adm-note-error">
           <div>
             The database is reachable but something is missing:{' '}
-            {firstError.message}. Run <code>supabase/schema.sql</code> in the
-            Supabase SQL editor.
+            {firstError.message}. Run{' '}
+            <code>
+              {firstError.message.includes('certificates')
+                ? 'supabase/certificates.sql'
+                : 'supabase/schema.sql'}
+            </code>{' '}
+            in the Supabase SQL editor.
           </div>
         </div>
       ) : allEmpty ? (
@@ -287,6 +316,7 @@ export default async function AdminDashboard() {
             <Link href="/admin/projects">Add a featured project</Link>
             <Link href="/admin/history">Add a history record</Link>
             <Link href="/admin/jobs">Post a job</Link>
+            <Link href="/admin/certificates">Add a certificate</Link>
             <a href="/" target="_blank" rel="noreferrer">
               Open the live site
             </a>

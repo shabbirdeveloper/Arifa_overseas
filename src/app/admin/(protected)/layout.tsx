@@ -23,13 +23,14 @@ export default async function ProtectedAdminLayout({
   const { supabase, user } = access;
 
   // Counts live in the sidebar, so they are fetched once for the whole area.
-  const [team, projects, history, jobs] = await Promise.all([
+  const [team, projects, history, jobs, certificates] = await Promise.all([
     supabase.from('team_members').select('*', { count: 'exact', head: true }),
     supabase.from('featured_projects').select('*', { count: 'exact', head: true }),
     supabase
       .from('project_history_items')
       .select('*', { count: 'exact', head: true }),
     supabase.from('jobs').select('*', { count: 'exact', head: true }),
+    supabase.from('certificates').select('*', { count: 'exact', head: true }),
   ]);
 
   const counts: SectionCounts = {
@@ -37,6 +38,7 @@ export default async function ProtectedAdminLayout({
     projects: projects.count ?? 0,
     history: history.count ?? 0,
     jobs: jobs.count ?? 0,
+    certificates: certificates.count ?? 0,
   };
 
   return (

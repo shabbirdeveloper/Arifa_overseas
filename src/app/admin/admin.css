@@ -66,7 +66,14 @@
   color: var(--adm-accent);
   text-decoration: none;
 }
-.adm a:hover {
+/* Underline only links that sit inside running text. A blanket `.adm a:hover`
+   rule outranks `.adm-rail-link:hover` on specificity, which underlined the
+   sidebar, the stat cards and every other link-shaped control. */
+.adm p a:hover,
+.adm .adm-note a:hover,
+.adm .adm-empty a:hover,
+.adm .adm-activity a:hover,
+.adm .adm-crumb a:hover {
   text-decoration: underline;
 }
 
@@ -107,6 +114,17 @@
   border-right: 1px solid var(--adm-line);
   padding: 18px 12px 14px;
   gap: 4px;
+  /* A sticky box taller than the viewport stops sticking and, when the page is
+     zoomed, repaints over itself. Scrolling the rail's own content keeps it
+     exactly one viewport tall however short the window is. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--adm-line-strong) transparent;
+}
+/* Nothing in the rail may be squeezed to make room — it scrolls instead. */
+.adm-rail > * {
+  flex-shrink: 0;
 }
 
 .adm-rail-brand {

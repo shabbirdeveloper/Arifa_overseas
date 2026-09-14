@@ -2,12 +2,16 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
-import { Icon } from '@/components/ui/Icon';
+import { CertIcon } from '@/content/certificate-icons';
 import { Lightbox } from '@/components/ui/Lightbox';
-import { certificates, type CertificateWithSize } from '@/content/certificates';
+import type { CertificateEntry } from '@/lib/data/certificates';
 
-export function CertificateCards() {
-  const [active, setActive] = useState<CertificateWithSize | null>(null);
+export function CertificateCards({
+  certificates,
+}: {
+  certificates: CertificateEntry[];
+}) {
+  const [active, setActive] = useState<CertificateEntry | null>(null);
 
   return (
     <>
@@ -15,11 +19,13 @@ export function CertificateCards() {
         {certificates.map((certificate, index) => (
           <div
             key={certificate.id}
-            id={certificate.id}
+            id={certificate.slug}
             className={`cert-full-card s3d d${(index % 3) + 1}`}
           >
             <div className="cert-full-icon">
-              <Icon svg={certificate.icon} />
+              <span className="icon-slot" aria-hidden="true">
+                <CertIcon iconKey={certificate.iconKey} />
+              </span>
             </div>
             <div className="cert-full-body">
               <div className="cert-full-badge">{certificate.badge}</div>

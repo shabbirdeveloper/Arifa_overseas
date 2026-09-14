@@ -22,6 +22,7 @@ const REORDERABLE = {
   project_history_items: '/projects',
   project_history_groups: '/projects',
   jobs: '/careers',
+  certificates: '/certificates',
 } as const;
 
 export type ReorderableTable = keyof typeof REORDERABLE;
